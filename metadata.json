@@ -1,0 +1,6 @@
+{
+  "name": "SheetTracker",
+  "description": "An AppSheet-like mobile-friendly interface to track and input Google Sheets data in real-time.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
