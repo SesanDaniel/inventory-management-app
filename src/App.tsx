@@ -229,8 +229,23 @@ export default function App() {
     }
   };
 
-  // Update existing row in Sheet
-  const handleEditRowSubmit = async (values: Record<string, string>) => {
+ const handleEditRowSubmit = async (values: Record<string, string>) => {
+  if (!token || !selectedRow) return;
+  setIsSaving(true);
+  try {
+    const columnNames = columns.map(c => c.name);
+    await updateSheetRow(spreadsheetId, selectedSheetName, selectedRow.rowIndex, columnNames, values, token);
+
+    // Reload rows
+    await loadRowsData();
+    setViewMode('detail');
+  } catch (err: any) {
+    console.error('Update row failed:', err);
+    throw err;
+  } finally {
+    setIsSaving(false);
+  }
+};
 
   // Delete row from Sheet
   const handleDeleteRow = async () => {
