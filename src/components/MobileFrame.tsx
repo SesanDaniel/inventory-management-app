@@ -57,7 +57,7 @@ export default function MobileFrame({ children }: MobileFrameProps) {
             <div className="absolute bottom-[15%] -right-[15%] w-[60%] h-[45%] bg-purple-600/20 rounded-full blur-[50px]" />
             <div className="absolute top-[40%] left-[10%] w-[50%] h-[35%] bg-emerald-500/10 rounded-full blur-[40px]" />
           </div>
-          <div className="flex-1 z-10 flex flex-col relative overflow-hidden">
+          <div key={React.Children.toArray(children).length} className="animate-fade-in flex-1 z-10 flex flex-col relative overflow-hidden">
             {children}
           </div>
         </div>
