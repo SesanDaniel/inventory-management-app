@@ -7,6 +7,7 @@ interface ListViewProps {
   rows: SheetRow[];
   onSelectRow: (row: SheetRow) => void;
   onAddRow: () => void;
+  onLogMovement: () => void;
   sheetName: string;
   spreadsheetTitle: string;
   onRefresh: () => void;
