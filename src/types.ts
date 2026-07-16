@@ -24,3 +24,5 @@ export interface SheetColumn {
 
 export type AppTab = 'data' | 'charts' | 'settings';
 export type ViewMode = 'list' | 'detail' | 'add' | 'edit';
+
+export type ViewMode = 'list' | 'detail' | 'add' | 'addMovement' | 'edit';
