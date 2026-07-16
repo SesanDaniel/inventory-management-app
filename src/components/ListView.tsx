@@ -344,10 +344,6 @@ export default function ListView({
       )}
     </>
   )}
-        New Item
-      </button>
-    </>
-  )}
   
   <button
     onClick={() => setShowFabMenu(prev => !prev)}
