@@ -260,3 +260,48 @@ export async function deleteSheetRow(
     throw new Error(data.error?.message || 'Failed to delete row from spreadsheet');
   }
 }
+
+export async function insertRowBeforeTotal(
+  spreadsheetId: string,
+  sheetId: number,
+  sheetName: string,
+  totalSheetRowNumber: number, // 1-based sheet row number where "TOTAL" currently sits
+  columns: string[],
+  values: Record<string, string>,
+  accessToken: string
+): Promise<void> {
+  const insertIndex = totalSheetRowNumber - 1; // 0-based row index to insert AT, pushing TOTAL down
+
+  const insertResp = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requests: [{
+          insertDimension: {
+            range: { sheetId, dimension: 'ROWS', startIndex: insertIndex, endIndex: insertIndex + 1 },
+            inheritFromBefore: true, // copies formatting from the row above (your last real data row)
+          },
+        }],
+      }),
+    }
+  );
+  const insertData = await insertResp.json();
+  if (!insertResp.ok) throw new Error(insertData.error?.message || 'Failed to insert row before TOTAL');
+
+  const rowNumber = insertIndex + 1; // back to 1-based
+  const range = `${encodeURIComponent(sheetName)}!A${rowNumber}:Z${rowNumber}`;
+  const rowData = columns.map(colName => values[colName] || '');
+
+  const writeResp = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`,
+    {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [rowData] }),
+    }
+  );
+  const writeData = await writeResp.json();
+  if (!writeResp.ok) throw new Error(writeData.error?.message || 'Failed to write values into new row');
+}
