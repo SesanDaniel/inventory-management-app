@@ -8,6 +8,7 @@ interface ListViewProps {
   onSelectRow: (row: SheetRow) => void;
   onAddRow: () => void;
   onLogMovement: () => void;
+  userRole: 'Admin' | 'Warehouse';
   sheetName: string;
   spreadsheetTitle: string;
   onRefresh: () => void;
@@ -20,6 +21,7 @@ export default function ListView({
   onSelectRow,
   onAddRow,
   onLogMovement,
+  userRole,
   sheetName,
   spreadsheetTitle,
   onRefresh,
@@ -332,10 +334,14 @@ export default function ListView({
       >
         Log Movement
       </button>
-      <button
-        onClick={() => { setShowFabMenu(false); onAddRow(); }}
-        className="animate-scale-in flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium pl-4 pr-3 py-2.5 rounded-full shadow-lg border border-white/10 active:scale-95 hover:scale-105 transition-transform duration-200"
-      >
+      {userRole === 'Admin' && (
+        <button
+          onClick={() => { setShowFabMenu(false); onAddRow(); }}
+          className="animate-scale-in flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium pl-4 pr-3 py-2.5 rounded-full shadow-lg border border-white/10 active:scale-95 hover:scale-105 transition-transform duration-200"
+        >
+          New Item
+        </button>
+      )}
         New Item
       </button>
     </>
