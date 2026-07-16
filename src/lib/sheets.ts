@@ -395,3 +395,21 @@ export function lookupMasterRowByPartNumber(
     colourName: match.values['Colour Name'] || '',
   };
 }
+
+export async function fetchColorMap(spreadsheetId: string, accessToken: string): Promise<Record<string, string>> {
+  const range = encodeURIComponent(`'COLORS (2)'!C1:D300`);
+  const resp = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error?.message || 'Failed to fetch colour map');
+
+  const map: Record<string, string> = {};
+  (data.values || []).forEach((row: string[]) => {
+    const code = (row[0] || '').trim().toUpperCase();
+    const name = row[1] || '';
+    if (code) map[code] = name;
+  });
+  return map;
+}
