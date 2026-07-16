@@ -342,6 +342,8 @@ export default function ListView({
           New Item
         </button>
       )}
+    </>
+  )}
         New Item
       </button>
     </>
