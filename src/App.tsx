@@ -311,8 +311,8 @@ useEffect(() => {
           row={selectedRow}
           columns={columns}
           onBack={() => setViewMode('list')}
-          onEdit={() => setViewMode('edit')}
-          onDelete={handleDeleteRow}
+          onEdit={userRole === 'Admin' ? () => setViewMode('edit') : undefined}
+          onDelete={userRole === 'Admin' ? handleDeleteRow : undefined}
           isDeleting={isSaving}
         />
       );
@@ -368,6 +368,7 @@ useEffect(() => {
         spreadsheetTitle={spreadsheetMetadata?.title || 'Spreadsheet'}
         onRefresh={() => loadRowsData(true)}
         isRefreshing={isRefreshing}
+        userRole={userRole}
       />
     );
   };
