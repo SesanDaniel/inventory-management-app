@@ -421,14 +421,19 @@ useEffect(() => {
             <span className="text-[9px] font-bold font-sans">Data</span>
           </button>
 
-          <button
-            onClick={() => handleTabChange('charts')}
-            className={`flex flex-col items-center gap-1 cursor-pointer transition-all duration-300 px-4 py-1 rounded-xl ${
-              activeTab === 'charts' 
-                ? 'text-white bg-indigo-500/20 border border-indigo-500/30 shadow-sm' 
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-            }`}
-          >
+          {userRole === 'Admin' && (
+            <button
+              onClick={() => handleTabChange('settings')}
+              className={`flex flex-col items-center gap-1 cursor-pointer transition-all duration-300 px-4 py-1 rounded-xl ${
+                activeTab === 'settings' 
+                  ? 'text-white bg-indigo-500/20 border border-indigo-500/30 shadow-sm' 
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+              }`}
+            >
+              <Settings className="w-5 h-5" />
+              <span className="text-[9px] font-bold font-sans">Settings</span>
+            </button>
+          )}
             <BarChart3 className="w-5 h-5" />
             <span className="text-[9px] font-bold font-sans">Charts</span>
           </button>
