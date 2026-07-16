@@ -3,7 +3,7 @@ import { User } from 'firebase/auth';
 import { Database, BarChart3, Settings, DatabaseBackup, Loader2, RefreshCw, Smartphone } from 'lucide-react';
 
 import { initAuth, googleSignIn, logout } from './lib/firebase';
-import { fetchSpreadsheetMetadata, fetchSheetRows, appendSheetRow, updateSheetRow, deleteSheetRow, insertRowBeforeTotal, insertMovementLogRow } from './lib/sheets';
+import { fetchSpreadsheetMetadata, fetchSheetRows, appendSheetRow, updateSheetRow, deleteSheetRow, insertRowBeforeTotal, insertMovementLogRow, fetchColorMap, fetchUserRole } from './lib/sheets';
 import { SpreadsheetMetadata, SheetRow, SheetColumn, AppTab, ViewMode } from './types';
 
 import MobileFrame from './components/MobileFrame';
@@ -29,6 +29,7 @@ export default function App() {
   const [columns, setColumns] = useState<SheetColumn[]>([]);
   const [rows, setRows] = useState<SheetRow[]>([]);
   const [masterRows, setMasterRows] = useState<SheetRow[]>([]);
+  const [colorMap, setColorMap] = useState<Record<string, string>>({});
   
   // Navigation and Interactive state
   const [activeTab, setActiveTab] = useState<AppTab>('data');
@@ -127,6 +128,13 @@ export default function App() {
       .then(result => setMasterRows(result.rows))
       .catch(err => console.error('Failed to load master sheet for lookups:', err));
   }, [token, spreadsheetId]);
+
+  useEffect(() => {
+  if (!token) return;
+  fetchColorMap(spreadsheetId, token)
+    .then(setColorMap)
+    .catch(err => console.error('Failed to load colour map:', err));
+}, [token, spreadsheetId]);
 
   // Sign In Handler
   const handleSignIn = async () => {
@@ -302,7 +310,7 @@ export default function App() {
       );
     }
 
-    if (viewMode === 'add') {
+   if (viewMode === 'add') {
       return (
         <FormView
           mode="add"
@@ -310,6 +318,7 @@ export default function App() {
           onBack={() => setViewMode('list')}
           onSubmit={handleAddRowSubmit}
           isSubmitting={isSaving}
+          colorMap={colorMap}
         />
       );
     }
