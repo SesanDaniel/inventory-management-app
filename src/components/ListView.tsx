@@ -346,3 +346,6 @@ export default function ListView({
     <Plus className="w-5 h-5 text-white stroke-[3]" />
   </button>
 </div>
+  </div>
+  );
+}
