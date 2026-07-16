@@ -3,7 +3,7 @@ import { User } from 'firebase/auth';
 import { Database, BarChart3, Settings, DatabaseBackup, Loader2, RefreshCw, Smartphone } from 'lucide-react';
 
 import { initAuth, googleSignIn, logout } from './lib/firebase';
-import { fetchSpreadsheetMetadata, fetchSheetRows, appendSheetRow, updateSheetRow, deleteSheetRow, insertRowBeforeTotal } from './lib/sheets';
+import { fetchSpreadsheetMetadata, fetchSheetRows, appendSheetRow, updateSheetRow, deleteSheetRow, insertRowBeforeTotal, insertMovementLogRow } from './lib/sheets';
 import { SpreadsheetMetadata, SheetRow, SheetColumn, AppTab, ViewMode } from './types';
 
 import MobileFrame from './components/MobileFrame';
@@ -13,6 +13,7 @@ import DetailView from './components/DetailView';
 import FormView from './components/FormView';
 import ChartsView from './components/ChartsView';
 import SettingsView from './components/SettingsView';
+import MovementLogForm from './components/MovementLogForm';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -27,7 +28,8 @@ export default function App() {
   const [selectedSheetName, setSelectedSheetName] = useState<string>('');
   const [columns, setColumns] = useState<SheetColumn[]>([]);
   const [rows, setRows] = useState<SheetRow[]>([]);
-
+  const [masterRows, setMasterRows] = useState<SheetRow[]>([]);
+  
   // Navigation and Interactive state
   const [activeTab, setActiveTab] = useState<AppTab>('data');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -117,6 +119,15 @@ export default function App() {
     loadRowsData();
   }, [token, selectedSheetName, spreadsheetId]);
 
+  // Independently keep the master sheet cached for Movement Log lookups,
+  // regardless of which sheet tab is currently selected
+  useEffect(() => {
+    if (!token) return;
+    fetchSheetRows(spreadsheetId, 'Ajman Stock 15-JULY-2026', token)
+      .then(result => setMasterRows(result.rows))
+      .catch(err => console.error('Failed to load master sheet for lookups:', err));
+  }, [token, spreadsheetId]);
+
   // Sign In Handler
   const handleSignIn = async () => {
     setIsLoggingIn(true);
@@ -192,24 +203,34 @@ export default function App() {
   }
 };
   
-  // Update existing row in Sheet
-  const handleEditRowSubmit = async (values: Record<string, string>) => {
-    if (!token || !selectedRow) return;
+  // Log a movement against an existing item, into the Movement Log sheet
+  const handleLogMovementSubmit = async (inputValues: string[]) => {
+    if (!token || !spreadsheetMetadata) return;
     setIsSaving(true);
     try {
-      const columnNames = columns.map(c => c.name);
-      await updateSheetRow(spreadsheetId, selectedSheetName, selectedRow.rowIndex, columnNames, values, token);
-      
-      // Reload rows
-      await loadRowsData();
-      setViewMode('detail');
+      const movementSheetInfo = spreadsheetMetadata.sheets.find(s => s.name === 'Movement Log');
+      if (!movementSheetInfo) throw new Error('"Movement Log" sheet not found');
+
+      // Get a fresh, accurate row count right before inserting
+      const freshMovementData = await fetchSheetRows(spreadsheetId, 'Movement Log', token);
+      const lastDataSheetRowNumber = freshMovementData.rows.length + 1; // header is row 1
+
+      await insertMovementLogRow(spreadsheetId, movementSheetInfo.sheetId, 'Movement Log', lastDataSheetRowNumber, inputValues, token);
+
+      if (selectedSheetName === 'Movement Log') {
+        await loadRowsData();
+      }
+      setViewMode('list');
     } catch (err: any) {
-      console.error('Update row failed:', err);
+      console.error('Log movement failed:', err);
       throw err;
     } finally {
       setIsSaving(false);
     }
   };
+
+  // Update existing row in Sheet
+  const handleEditRowSubmit = async (values: Record<string, string>) => {
 
   // Delete row from Sheet
   const handleDeleteRow = async () => {
@@ -278,6 +299,16 @@ export default function App() {
       );
     }
 
+    if (viewMode === 'addMovement') {
+      return (
+        <MovementLogForm
+          masterRows={masterRows}
+          onCancel={() => setViewMode('list')}
+          onSubmit={handleLogMovementSubmit}
+        />
+      );
+    }
+
     if (viewMode === 'edit' && selectedRow) {
       return (
         <FormView
@@ -300,6 +331,7 @@ export default function App() {
           setViewMode('detail');
         }}
         onAddRow={() => setViewMode('add')}
+        onLogMovement={() => setViewMode('addMovement')}
         sheetName={selectedSheetName}
         spreadsheetTitle={spreadsheetMetadata?.title || 'Spreadsheet'}
         onRefresh={() => loadRowsData(true)}
