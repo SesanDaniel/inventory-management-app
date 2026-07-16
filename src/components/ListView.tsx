@@ -320,14 +320,29 @@ export default function ListView({
         )}
       </div>
 
-      {/* Floating Action Button (FAB) */}
+      {/* Floating Action Button (FAB) with expandable menu */}
+<div className="absolute bottom-5 right-5 z-30 flex flex-col items-end gap-3">
+  {showFabMenu && (
+    <>
       <button
-        onClick={onAddRow}
-        className="absolute bottom-5 right-5 w-12 h-12 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-500/30 active:scale-90 hover:scale-105 transition-all duration-300 border border-white/20 z-30"
-        title="Add New Row"
+        onClick={() => { setShowFabMenu(false); onLogMovement(); }}
+        className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium pl-4 pr-3 py-2.5 rounded-full shadow-lg border border-white/10 active:scale-95 transition-all duration-200"
       >
-        <Plus className="w-5 h-5 text-white stroke-[3]" />
+        Log Movement
       </button>
-    </div>
-  );
-}
+      <button
+        onClick={() => { setShowFabMenu(false); onAddRow(); }}
+        className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium pl-4 pr-3 py-2.5 rounded-full shadow-lg border border-white/10 active:scale-95 transition-all duration-200"
+      >
+        New Item
+      </button>
+    </>
+  )}
+  <button
+    onClick={() => setShowFabMenu(prev => !prev)}
+    className={`w-12 h-12 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-500/30 active:scale-90 hover:scale-105 transition-all duration-300 border border-white/20 ${showFabMenu ? 'rotate-45' : ''}`}
+    title="Add"
+  >
+    <Plus className="w-5 h-5 text-white stroke-[3]" />
+  </button>
+</div>
