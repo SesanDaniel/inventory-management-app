@@ -362,7 +362,7 @@ export async function insertMovementLogRow(
   const data = MOVEMENT_LOG_INPUT_COLUMNS.map(colIdx => {
     const colLetter = String.fromCharCode(65 + colIdx); // 0->A, 7->H, etc.
     return {
-      range: `${encodeURIComponent(sheetName)}!${colLetter}${newSheetRowNumber}`,
+      range: `'${sheetName}'!${colLetter}${newSheetRowNumber}`,
       values: [[inputValues[colIdx] ?? '']],
     };
   });
