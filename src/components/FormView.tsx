@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Loader2, AlertCircle } from 'lucide-react';
 import { SheetColumn } from '../types';
+import { deriveFieldsFromPartNumber } from '../lib/deriveFields';
 
 interface FormViewProps {
   mode: 'add' | 'edit';
@@ -9,6 +10,7 @@ interface FormViewProps {
   onBack: () => void;
   onSubmit: (values: Record<string, string>) => Promise<void>;
   isSubmitting: boolean;
+  colorMap?: Record<string, string>;
 }
 
 export default function FormView({
@@ -18,6 +20,7 @@ export default function FormView({
   onBack,
   onSubmit,
   isSubmitting,
+  colorMap = {},
 }: FormViewProps) {
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
@@ -33,12 +36,22 @@ export default function FormView({
   }, [columns, initialValues]);
 
   const handleChange = (fieldName: string, value: string) => {
-    setFormValues(prev => ({
-      ...prev,
-      [fieldName]: value,
-    }));
+    setFormValues(prev => {
+      const next = { ...prev, [fieldName]: value };
+      if (mode === 'add' && fieldName === 'Part Number') {
+        const derived = deriveFieldsFromPartNumber(value, colorMap);
+        if (derived) {
+          next['Item Code'] = derived.itemCode;
+          next['Item Type'] = derived.itemType;
+          next['Size'] = derived.size;
+          next['Colour Code'] = derived.colourCode;
+          next['Colour Name'] = derived.colourName;
+        }
+      }
+      return next;
+    });
   };
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
