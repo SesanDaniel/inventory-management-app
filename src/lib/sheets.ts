@@ -183,6 +183,20 @@ export async function appendSheetRow(
   }
 }
 
+export async function fetchUserRole(spreadsheetId: string, email: string, accessToken: string): Promise<'Admin' | 'Warehouse'> {
+  const range = encodeURIComponent(`Users!A1:B100`);
+  const resp = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error?.message || 'Failed to fetch user roles');
+
+  const rows: string[][] = data.values || [];
+  const match = rows.find(row => (row[0] || '').trim().toLowerCase() === email.trim().toLowerCase());
+  return match && match[1] === 'Admin' ? 'Admin' : 'Warehouse'; // unlisted or non-Admin = restricted by default
+}
+
 /**
  * Update an existing row in the spreadsheet
  * rowIndex is 0-based index (of data rows, so rowIndex 0 is sheet row 2)
