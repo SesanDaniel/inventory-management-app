@@ -1,5 +1,4 @@
 import { SpreadsheetMetadata, SheetRow, SheetColumn } from '../types';
-import { fetchUserRole } from '../App';
 
 /**
  * Fetch spreadsheet metadata (title and sheet names with ids)
