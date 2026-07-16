@@ -30,6 +30,7 @@ export default function App() {
   const [rows, setRows] = useState<SheetRow[]>([]);
   const [masterRows, setMasterRows] = useState<SheetRow[]>([]);
   const [colorMap, setColorMap] = useState<Record<string, string>>({});
+  const [userRole, setUserRole] = useState<'Admin' | 'Warehouse'>('Warehouse');
   
   // Navigation and Interactive state
   const [activeTab, setActiveTab] = useState<AppTab>('data');
@@ -135,6 +136,13 @@ export default function App() {
     .then(setColorMap)
     .catch(err => console.error('Failed to load colour map:', err));
 }, [token, spreadsheetId]);
+
+useEffect(() => {
+  if (!token || !user?.email) return;
+  fetchUserRole(spreadsheetId, user.email, token)
+    .then(setUserRole)
+    .catch(err => console.error('Failed to load user role:', err));
+}, [token, user, spreadsheetId]);
 
   // Sign In Handler
   const handleSignIn = async () => {
