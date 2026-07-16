@@ -25,13 +25,11 @@ export default function MobileFrame({ children }: MobileFrameProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 sm:p-8 font-sans selection:bg-indigo-500 selection:text-white">
-      {/* Decorative ambient background blur */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-0 sm:p-8 font-sans selection:bg-indigo-500 selection:text-white">
+  <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none hidden sm:block" />
+  <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none hidden sm:block" />
 
-      {/* Main Bezel Container */}
-      <div className="relative w-full max-w-[420px] h-[840px] bg-slate-950 rounded-[48px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border-[10px] border-slate-800 flex flex-col overflow-hidden transition-all duration-300">
+  <div className="relative w-full sm:max-w-[420px] h-screen sm:h-[840px] bg-slate-950 sm:rounded-[48px] shadow-none sm:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border-0 sm:border-[10px] border-slate-800 flex flex-col overflow-hidden transition-all duration-300">
         
         {/* Speaker Slot / Camera Notch */}
         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-40 h-7 bg-slate-800 rounded-b-2xl z-50 flex items-center justify-center gap-1.5 border-x border-b border-slate-700">
