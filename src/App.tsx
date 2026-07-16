@@ -3,7 +3,7 @@ import { User } from 'firebase/auth';
 import { Database, BarChart3, Settings, DatabaseBackup, Loader2, RefreshCw, Smartphone } from 'lucide-react';
 
 import { initAuth, googleSignIn, logout } from './lib/firebase';
-import { fetchSpreadsheetMetadata, fetchSheetRows, appendSheetRow, updateSheetRow, deleteSheetRow } from './lib/sheets';
+import { fetchSpreadsheetMetadata, fetchSheetRows, appendSheetRow, updateSheetRow, deleteSheetRow, insertRowBeforeTotal } from './lib/sheets';
 import { SpreadsheetMetadata, SheetRow, SheetColumn, AppTab, ViewMode } from './types';
 
 import MobileFrame from './components/MobileFrame';
@@ -165,23 +165,33 @@ export default function App() {
 
   // Append new row to Sheet
   const handleAddRowSubmit = async (values: Record<string, string>) => {
-    if (!token) return;
-    setIsSaving(true);
-    try {
-      const columnNames = columns.map(c => c.name);
-      await appendSheetRow(spreadsheetId, selectedSheetName, columnNames, values, token);
-      
-      // Reload rows to capture the newly added row
-      await loadRowsData();
-      setViewMode('list');
-    } catch (err: any) {
-      console.error('Add row failed:', err);
-      throw err;
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  if (!token || !spreadsheetMetadata) return;
+  setIsSaving(true);
+  try {
+    const columnNames = columns.map(c => c.name);
+    const activeSheetInfo = spreadsheetMetadata.sheets.find(s => s.name === selectedSheetName);
+    if (!activeSheetInfo) throw new Error('Active sheet not found in metadata');
 
+    // Find the TOTAL row among currently loaded rows (checks the first column's value)
+    const totalRow = rows.find(r => String(Object.values(r.values)[0] || '').trim().toUpperCase() === 'TOTAL');
+
+    if (totalRow) {
+      const totalSheetRowNumber = totalRow.rowIndex + 2; // data rowIndex 0 = sheet row 2
+      await insertRowBeforeTotal(spreadsheetId, activeSheetInfo.sheetId, selectedSheetName, totalSheetRowNumber, columnNames, values, token);
+    } else {
+      await appendSheetRow(spreadsheetId, selectedSheetName, columnNames, values, token);
+    }
+
+    await loadRowsData();
+    setViewMode('list');
+  } catch (err: any) {
+    console.error('Add row failed:', err);
+    throw err;
+  } finally {
+    setIsSaving(false);
+  }
+};
+  
   // Update existing row in Sheet
   const handleEditRowSubmit = async (values: Record<string, string>) => {
     if (!token || !selectedRow) return;
