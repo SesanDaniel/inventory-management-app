@@ -19,6 +19,7 @@ export default function ListView({
   rows,
   onSelectRow,
   onAddRow,
+  onLogMovement,
   sheetName,
   spreadsheetTitle,
   onRefresh,
@@ -30,6 +31,7 @@ export default function ListView({
   const [sortColumn, setSortColumn] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showFilters, setShowFilters] = useState(false);
+  const [showFabMenu, setShowFabMenu] = useState(false);
 
   // Auto-detect a good candidate for "Title Column"
   const titleColumn = useMemo(() => {
