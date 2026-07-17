@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User } from 'firebase/auth';
-import { Database, BarChart3, Settings, DatabaseBackup, Loader2, RefreshCw, Smartphone } from 'lucide-react';
+import { Database, BarChart3, Settings, DatabaseBackup, Loader2, RefreshCw, Smartphone, Clock } from 'lucide-react';
 
 import { initAuth, googleSignIn, logout } from './lib/firebase';
-import { fetchSpreadsheetMetadata, fetchSheetRows, appendSheetRow, updateSheetRow, deleteSheetRow, insertRowBeforeTotal, insertMovementLogRow, fetchColorMap, fetchUserRole } from './lib/sheets';
+import { fetchSpreadsheetMetadata, fetchSheetRows, appendSheetRow, updateSheetRow, deleteSheetRow, insertRowBeforeTotal, insertMovementLogRow, fetchColorMap, fetchUserRole, fetchRecentMovements, MovementLogEntry } from './lib/sheets';
 import { SpreadsheetMetadata, SheetRow, SheetColumn, AppTab, ViewMode } from './types';
+import RecentMovementsView from './components/RecentMovementsView';
 
 import MobileFrame from './components/MobileFrame';
 import AuthScreen from './components/AuthScreen';
@@ -31,6 +32,8 @@ export default function App() {
   const [masterRows, setMasterRows] = useState<SheetRow[]>([]);
   const [colorMap, setColorMap] = useState<Record<string, string>>({});
   const [userRole, setUserRole] = useState<'Admin' | 'Warehouse'>('Warehouse');
+  const [movementLog, setMovementLog] = useState<MovementLogEntry[]>([]);
+  const [isMovementsLoading, setIsMovementsLoading] = useState(false);
   
   // Navigation and Interactive state
   const [activeTab, setActiveTab] = useState<AppTab>('data');
@@ -190,6 +193,19 @@ useEffect(() => {
     setActiveTab('data');
   };
 
+  const loadRecentMovements = async () => {
+  if (!token) return;
+  setIsMovementsLoading(true);
+  try {
+    const entries = await fetchRecentMovements(spreadsheetId, token);
+    setMovementLog(entries);
+  } catch (err) {
+    console.error('Failed to load recent movements:', err);
+  } finally {
+    setIsMovementsLoading(false);
+  }
+};
+
   // Append new row to Sheet
   const handleAddRowSubmit = async (values: Record<string, string>) => {
   if (!token || !spreadsheetMetadata) return;
@@ -287,10 +303,12 @@ useEffect(() => {
   // Helpers to select tabs
   const handleTabChange = (tab: AppTab) => {
     setActiveTab(tab);
-    // When changing tabs, clear detail views to keep the dashboard clean
     if (tab !== 'data') {
       setSelectedRow(null);
       setViewMode('list');
+    }
+    if (tab === 'recent') {
+      loadRecentMovements();
     }
   };
 
@@ -387,6 +405,8 @@ useEffect(() => {
           renderDataView()
         ) : activeTab === 'charts' ? (
           <ChartsView columns={columns} rows={rows} />
+        ) : activeTab === 'recent' ? (
+          <RecentMovementsView movements={movementLog} isLoading={isMovementsLoading} onRefresh={loadRecentMovements} />
         ) : (
           <SettingsView
             user={user}
@@ -432,6 +452,18 @@ useEffect(() => {
           >
             <BarChart3 className="w-5 h-5" />
             <span className="text-[9px] font-bold font-sans">Charts</span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('recent')}
+            className={`flex flex-col items-center gap-1 cursor-pointer transition-all duration-300 px-4 py-1 rounded-xl ${
+              activeTab === 'recent' 
+                ? 'text-white bg-indigo-500/20 border border-indigo-500/30 shadow-sm' 
+                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+            }`}
+          >
+            <Clock className="w-5 h-5" />
+            <span className="text-[9px] font-bold font-sans">Recent</span>
           </button>
 
           {userRole === 'Admin' && (
