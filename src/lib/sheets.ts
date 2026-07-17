@@ -427,3 +427,54 @@ export async function fetchColorMap(spreadsheetId: string, accessToken: string):
   });
   return map;
 }
+
+export interface MovementLogEntry {
+  date: string;
+  movementType: string;
+  partNumber: string;
+  itemCode: string;
+  productSpec: string;
+  size: string;
+  colourName: string;
+  sourceLocation: string;
+  destLocation: string;
+  qtyMoved: string;
+  qtyBefore: string;
+  qtyAfter: string;
+  reference: string;
+  remarks: string;
+  recordedBy: string;
+  status: string;
+}
+
+export async function fetchRecentMovements(spreadsheetId: string, accessToken: string): Promise<MovementLogEntry[]> {
+  const range = encodeURIComponent(`'Movement Log'!A3:P5000`);
+  const resp = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error?.message || 'Failed to fetch movement log');
+
+  const rows: string[][] = data.values || [];
+  return rows
+    .filter(r => r[0])
+    .map(r => ({
+      date: r[0] || '',
+      movementType: r[1] || '',
+      partNumber: r[2] || '',
+      itemCode: r[3] || '',
+      productSpec: r[4] || '',
+      size: r[5] || '',
+      colourName: r[6] || '',
+      sourceLocation: r[7] || '',
+      destLocation: r[8] || '',
+      qtyMoved: r[9] || '',
+      qtyBefore: r[10] || '',
+      qtyAfter: r[11] || '',
+      reference: r[12] || '',
+      remarks: r[13] || '',
+      recordedBy: r[14] || '',
+      status: r[15] || '',
+    }));
+}
