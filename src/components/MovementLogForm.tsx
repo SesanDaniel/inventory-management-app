@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { X, ArrowLeftRight } from 'lucide-react';
 import { SheetRow } from '../types';
 import { lookupMasterRowByPartNumber } from '../lib/sheets';
+import BarcodeScanner from './BarcodeScanner';
 
 interface MovementLogFormProps {
   masterRows: SheetRow[];
@@ -22,6 +23,7 @@ export default function MovementLogForm({ masterRows, onSubmit, onCancel }: Move
   const [recordedBy, setRecordedBy] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showScanner, setShowScanner] = useState(false);
 
   const lookup = useMemo(
     () => (partNumber.trim() ? lookupMasterRowByPartNumber(masterRows, partNumber) : null),
@@ -69,15 +71,34 @@ export default function MovementLogForm({ masterRows, onSubmit, onCancel }: Move
         </button>
       </div>
 
-      <div>
+    <div>
         <label className="text-xs text-slate-400 mb-1 block">Part Number</label>
-        <input
-          value={partNumber}
-          onChange={e => setPartNumber(e.target.value)}
-          placeholder="e.g. M2308N046087E"
-          className="w-full bg-slate-800 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-700 focus:border-indigo-500 outline-none"
-        />
+        <div className="flex gap-2">
+          <input
+            value={partNumber}
+            onChange={e => setPartNumber(e.target.value)}
+            placeholder="e.g. M2308N046087E"
+            className="flex-1 bg-slate-800 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-700 focus:border-indigo-500 outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => setShowScanner(true)}
+            className="px-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white text-xs font-medium"
+          >
+            Scan
+          </button>
+        </div>
       </div>
+
+      {showScanner && (
+        <BarcodeScanner
+          onScan={(decoded) => {
+            setPartNumber(decoded);
+            setShowScanner(false);
+          }}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
 
       {/* Live autofill preview — read-only, matches your sheet's lookup formulas */}
       {partNumber.trim() && (
