@@ -14,7 +14,7 @@ const MOVEMENT_TYPES = ['Stock In', 'Stock Out', 'Transfer'];
 
 export default function MovementLogForm({ masterRows, onSubmit, onCancel }: MovementLogFormProps) {
   const [partNumber, setPartNumber] = useState('');
-  const [movementType, setMovementType] = useState('Stock Out');
+  const [movementType, setMovementType] = useState('');
   const [sourceLocation, setSourceLocation] = useState('');
   const [destLocation, setDestLocation] = useState('');
   const [qtyMoved, setQtyMoved] = useState('');
@@ -33,14 +33,15 @@ export default function MovementLogForm({ masterRows, onSubmit, onCancel }: Move
   const today = new Date().toISOString().split('T')[0];
 
   const handleSubmit = async () => {
-    if (!partNumber.trim()) { setError('Enter a Part Number'); return; }
+    if (!partNumber.trim()) { setError('Part Number is required'); return; }
     if (!lookup) { setError('No matching item found for that Part Number'); return; }
-    if (!qtyMoved.trim()) { setError('Enter quantity moved'); return; }
+    if (!movementType.trim()) { setError('Select a Movement Type'); return; }
+    if (!qtyMoved.trim()) { setError('Qty Moved is required'); return; }
+    if (!recordedBy.trim()) { setError('Recorded By is required'); return; }
 
     setIsSaving(true);
     setError('');
     try {
-      // Array positions match columns A..P; only input columns are actually used by insertMovementLogRow
       const values = new Array(16).fill('');
       values[0] = today;
       values[1] = movementType;
@@ -71,8 +72,8 @@ export default function MovementLogForm({ masterRows, onSubmit, onCancel }: Move
         </button>
       </div>
 
-    <div>
-        <label className="text-xs text-slate-400 mb-1 block">Part Number</label>
+      <div>
+        <label className="text-xs text-slate-400 mb-1 block">Part Number <span className="text-red-400">*</span></label>
         <div className="flex gap-2">
           <input
             value={partNumber}
@@ -100,7 +101,6 @@ export default function MovementLogForm({ masterRows, onSubmit, onCancel }: Move
         />
       )}
 
-      {/* Live autofill preview — read-only, matches your sheet's lookup formulas */}
       {partNumber.trim() && (
         lookup ? (
           <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 grid grid-cols-2 gap-2 text-sm">
@@ -115,9 +115,10 @@ export default function MovementLogForm({ masterRows, onSubmit, onCancel }: Move
       )}
 
       <div>
-        <label className="text-xs text-slate-400 mb-1 block">Movement Type</label>
+        <label className="text-xs text-slate-400 mb-1 block">Movement Type <span className="text-red-400">*</span></label>
         <select value={movementType} onChange={e => setMovementType(e.target.value)}
           className="w-full bg-slate-800 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-700 outline-none">
+          <option value="" disabled>(Select movement type)</option>
           {MOVEMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       </div>
@@ -136,7 +137,7 @@ export default function MovementLogForm({ masterRows, onSubmit, onCancel }: Move
       </div>
 
       <div>
-        <label className="text-xs text-slate-400 mb-1 block">Qty Moved</label>
+        <label className="text-xs text-slate-400 mb-1 block">Qty Moved <span className="text-red-400">*</span></label>
         <input type="number" value={qtyMoved} onChange={e => setQtyMoved(e.target.value)}
           className="w-full bg-slate-800 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-700 outline-none" />
       </div>
@@ -154,7 +155,7 @@ export default function MovementLogForm({ masterRows, onSubmit, onCancel }: Move
       </div>
 
       <div>
-        <label className="text-xs text-slate-400 mb-1 block">Recorded By</label>
+        <label className="text-xs text-slate-400 mb-1 block">Recorded By <span className="text-red-400">*</span></label>
         <input value={recordedBy} onChange={e => setRecordedBy(e.target.value)}
           className="w-full bg-slate-800 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-700 outline-none" />
       </div>
