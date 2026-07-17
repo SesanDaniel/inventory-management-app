@@ -22,6 +22,6 @@ export interface SheetColumn {
   options?: string[]; // Auto-detected options for select dropdown
 }
 
-export type AppTab = 'data' | 'charts' | 'settings';
+export type AppTab = 'data' | 'charts' | 'recent' | 'settings';
 
 export type ViewMode = 'list' | 'detail' | 'add' | 'addMovement' | 'edit';
