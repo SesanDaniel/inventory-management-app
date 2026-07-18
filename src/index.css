@@ -4,6 +4,8 @@
 html, body, #root {
   height: 100%;
   margin: 0;
+  background-color: #020617;
+  overscroll-behavior-y: none;
 }
 
 @theme {
