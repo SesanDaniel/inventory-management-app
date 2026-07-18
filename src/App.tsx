@@ -136,10 +136,18 @@ export default function App() {
 
   // Independently keep the master sheet cached for Movement Log lookups,
   // regardless of which sheet tab is currently selected
+  const getMasterSheetName = (): string | null => {
+    if (!spreadsheetMetadata) return null;
+    const match = spreadsheetMetadata.sheets.find(s => s.name.toLowerCase().includes('stock'));
+    return match ? match.name : null;
+  };
+
   const loadMasterRows = async () => {
     if (!token) return;
+    const masterSheetName = getMasterSheetName();
+    if (!masterSheetName) return;
     try {
-      const result = await fetchSheetRows(spreadsheetId, 'Ajman Stock 15-JULY-2026', token);
+      const result = await fetchSheetRows(spreadsheetId, masterSheetName, token);
       setMasterRows(result.rows);
     } catch (err) {
       console.error('Failed to load master sheet for lookups:', err);
@@ -148,7 +156,7 @@ export default function App() {
 
   useEffect(() => {
     loadMasterRows();
-  }, [token, spreadsheetId]);
+  }, [token, spreadsheetId, spreadsheetMetadata]);
 
 useEffect(() => {
   if (!token || !user?.email) return;
