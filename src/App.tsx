@@ -133,12 +133,21 @@ export default function App() {
       .catch(err => console.error('Failed to load master sheet for lookups:', err));
   }, [token, spreadsheetId]);
 
+  // Independently keep the master sheet cached for Movement Log lookups,
+  // regardless of which sheet tab is currently selected
+  const loadMasterRows = async () => {
+    if (!token) return;
+    try {
+      const result = await fetchSheetRows(spreadsheetId, 'Ajman Stock 15-JULY-2026', token);
+      setMasterRows(result.rows);
+    } catch (err) {
+      console.error('Failed to load master sheet for lookups:', err);
+    }
+  };
+
   useEffect(() => {
-  if (!token) return;
-  fetchColorMap(spreadsheetId, token)
-    .then(setColorMap)
-    .catch(err => console.error('Failed to load colour map:', err));
-}, [token, spreadsheetId]);
+    loadMasterRows();
+  }, [token, spreadsheetId]);
 
 useEffect(() => {
   if (!token || !user?.email) return;
@@ -381,7 +390,7 @@ useEffect(() => {
           setViewMode('detail');
         }}
         onAddRow={() => setViewMode('add')}
-        onLogMovement={() => setViewMode('addMovement')}
+        onLogMovement={() => { loadMasterRows(); setViewMode('addMovement'); }}
         sheetName={selectedSheetName}
         spreadsheetTitle={spreadsheetMetadata?.title || 'Spreadsheet'}
         onRefresh={() => loadRowsData(true)}
