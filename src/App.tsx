@@ -6,6 +6,7 @@ import { initAuth, googleSignIn, logout } from './lib/firebase';
 import { fetchSpreadsheetMetadata, fetchSheetRows, appendSheetRow, updateSheetRow, deleteSheetRow, insertRowBeforeTotal, insertMovementLogRow, fetchColorMap, fetchUserRole, fetchRecentMovements, MovementLogEntry } from './lib/sheets';
 import { SpreadsheetMetadata, SheetRow, SheetColumn, AppTab, ViewMode } from './types';
 import RecentMovementsView from './components/RecentMovementsView';
+import DesktopShell from './components/DesktopShell';
 
 import MobileFrame from './components/MobileFrame';
 import AuthScreen from './components/AuthScreen';
@@ -479,41 +480,53 @@ useEffect(() => {
 
   const hasDetailContent = detailPaneContent !== null;
 
+const desktopTabButton = (tab: AppTab, label: string, Icon: any) => (
+    <button
+      onClick={() => handleTabChange(tab)}
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+        activeTab === tab
+          ? 'text-white bg-indigo-500/20 border border-indigo-500/30'
+          : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+      }`}
+    >
+      <Icon className="w-4 h-4" />
+      {label}
+    </button>
+  );
+
   return (
-    <MobileFrame>
-      {/* Dynamic Content Pane */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {needsAuth ? (
-          <AuthScreen
-            onSignIn={handleSignIn}
-            isLoggingIn={isLoggingIn}
-            error={authError}
-          />
-        ) : activeTab === 'data' ? (
-          renderDataView()
-        ) : activeTab === 'charts' ? (
-          <ChartsView columns={columns} rows={rows} />
-        ) : activeTab === 'recent' ? (
-          <RecentMovementsView movements={movementLog} isLoading={isMovementsLoading} onRefresh={loadRecentMovements} />
-        ) : (
-          <SettingsView
-            user={user}
-            spreadsheetId={spreadsheetId}
-            spreadsheetMetadata={spreadsheetMetadata}
-            selectedSheetName={selectedSheetName}
-            onUpdateSpreadsheetId={newId => {
-              setSpreadsheetId(newId);
-              setViewMode('list');
-              setSelectedRow(null);
-              setActiveTab('data');
-            }}
-            onSelectSheet={handleSelectSheet}
-            onLogout={handleLogout}
-            isUpdatingMetadata={isUpdatingMetadata}
-            metadataError={metadataError}
-          />
-        )}
-      </div>
+    <>
+      {/* MOBILE (below lg breakpoint) — unchanged from before */}
+      <div className="lg:hidden">
+        <MobileFrame>
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {needsAuth ? (
+              <AuthScreen onSignIn={handleSignIn} isLoggingIn={isLoggingIn} error={authError} />
+            ) : activeTab === 'data' ? (
+              renderDataView()
+            ) : activeTab === 'charts' ? (
+              <ChartsView columns={columns} rows={rows} />
+            ) : activeTab === 'recent' ? (
+              <RecentMovementsView movements={movementLog} isLoading={isMovementsLoading} onRefresh={loadRecentMovements} />
+            ) : (
+              <SettingsView
+                user={user}
+                spreadsheetId={spreadsheetId}
+                spreadsheetMetadata={spreadsheetMetadata}
+                selectedSheetName={selectedSheetName}
+                onUpdateSpreadsheetId={newId => {
+                  setSpreadsheetId(newId);
+                  setViewMode('list');
+                  setSelectedRow(null);
+                  setActiveTab('data');
+                }}
+                onSelectSheet={handleSelectSheet}
+                onLogout={handleLogout}
+                isUpdatingMetadata={isUpdatingMetadata}
+                metadataError={metadataError}
+              />
+            )}
+          </div>
 
       {/* Persistent Bottom Mobile Navigation Tabs (visible only when authenticated) */}
       {!needsAuth && (
@@ -570,6 +583,57 @@ useEffect(() => {
         
         </div>
       )}
-    </MobileFrame>
+        </MobileFrame>
+      </div>
+
+      {/* DESKTOP (lg breakpoint and up) */}
+      <div className="hidden lg:flex h-screen w-full bg-slate-950">
+        {needsAuth ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-full max-w-sm">
+              <AuthScreen onSignIn={handleSignIn} isLoggingIn={isLoggingIn} error={authError} />
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="h-16 shrink-0 border-b border-slate-800 flex items-center justify-between px-6">
+              <span className="text-white font-bold text-lg">SheetTracker</span>
+              <div className="flex items-center gap-2">
+                {desktopTabButton('data', 'Data', Database)}
+                {desktopTabButton('charts', 'Charts', BarChart3)}
+                {desktopTabButton('recent', 'Recent', Clock)}
+                {userRole === 'Admin' && desktopTabButton('settings', 'Settings', Settings)}
+              </div>
+            </div>
+            <div className="flex-1 flex overflow-hidden">
+              {activeTab === 'data' ? (
+                <DesktopShell listPane={listPaneContent} detailPane={detailPaneContent} hasSelection={hasDetailContent} />
+              ) : activeTab === 'charts' ? (
+                <ChartsView columns={columns} rows={rows} />
+              ) : activeTab === 'recent' ? (
+                <RecentMovementsView movements={movementLog} isLoading={isMovementsLoading} onRefresh={loadRecentMovements} />
+              ) : (
+                <SettingsView
+                  user={user}
+                  spreadsheetId={spreadsheetId}
+                  spreadsheetMetadata={spreadsheetMetadata}
+                  selectedSheetName={selectedSheetName}
+                  onUpdateSpreadsheetId={newId => {
+                    setSpreadsheetId(newId);
+                    setViewMode('list');
+                    setSelectedRow(null);
+                    setActiveTab('data');
+                  }}
+                  onSelectSheet={handleSelectSheet}
+                  onLogout={handleLogout}
+                  isUpdatingMetadata={isUpdatingMetadata}
+                  metadataError={metadataError}
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
