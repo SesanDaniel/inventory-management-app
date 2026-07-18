@@ -400,6 +400,85 @@ useEffect(() => {
     );
   };
 
+  // Additive building blocks for the desktop two-pane layout — reuses the
+  // exact same state/handlers as above, doesn't touch renderDataView at all
+  const listPaneContent = (
+    <ListView
+      columns={columns}
+      rows={rows}
+      onSelectRow={row => {
+        setSelectedRow(row);
+        setViewMode('detail');
+      }}
+      onAddRow={() => setViewMode('add')}
+      onLogMovement={() => { loadMasterRows(); setViewMode('addMovement'); }}
+      sheetName={selectedSheetName}
+      spreadsheetTitle={spreadsheetMetadata?.title || 'Spreadsheet'}
+      onRefresh={() => loadRowsData(true)}
+      isRefreshing={isRefreshing}
+      userRole={userRole}
+    />
+  );
+
+  const detailPaneContent = (() => {
+    if (isLoadingRows) {
+      return (
+        <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-2" />
+          <span className="text-xs font-semibold">Loading data cells...</span>
+        </div>
+      );
+    }
+    if (viewMode === 'detail' && selectedRow) {
+      return (
+        <DetailView
+          row={selectedRow}
+          columns={columns}
+          onBack={() => setViewMode('list')}
+          onEdit={userRole === 'Admin' ? () => setViewMode('edit') : undefined}
+          onDelete={userRole === 'Admin' ? handleDeleteRow : undefined}
+          isDeleting={isSaving}
+        />
+      );
+    }
+    if (viewMode === 'add') {
+      return (
+        <FormView
+          mode="add"
+          columns={columns}
+          onBack={() => setViewMode('list')}
+          onSubmit={handleAddRowSubmit}
+          isSubmitting={isSaving}
+          colorMap={colorMap}
+        />
+      );
+    }
+    if (viewMode === 'addMovement') {
+      return (
+        <MovementLogForm
+          masterRows={masterRows}
+          onCancel={() => setViewMode('list')}
+          onSubmit={handleLogMovementSubmit}
+        />
+      );
+    }
+    if (viewMode === 'edit' && selectedRow) {
+      return (
+        <FormView
+          mode="edit"
+          columns={columns}
+          initialValues={selectedRow.values}
+          onBack={() => setViewMode('detail')}
+          onSubmit={handleEditRowSubmit}
+          isSubmitting={isSaving}
+        />
+      );
+    }
+    return null;
+  })();
+
+  const hasDetailContent = detailPaneContent !== null;
+
   return (
     <MobileFrame>
       {/* Dynamic Content Pane */}
