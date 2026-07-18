@@ -324,7 +324,7 @@ export default function ListView({
       </div>
 
       {/* Floating Action Button (FAB) with expandable menu */}
-<div className="absolute bottom-8 right-6 z-30 flex flex-col items-end gap-3">
+<div className="absolute bottom-20 right-6 z-30 flex flex-col items-end gap-3">
   {showFabMenu && (
     <>
       <button
