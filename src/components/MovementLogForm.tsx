@@ -24,6 +24,16 @@ export default function MovementLogForm({ masterRows, onSubmit, onCancel }: Move
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [showScanner, setShowScanner] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const suggestions = useMemo(() => {
+  if (!partNumber.trim() || partNumber.length < 2) return [];
+  const query = partNumber.trim().toUpperCase();
+  return masterRows
+    .map(r => r.values['Part Number'] || '')
+    .filter(p => p.toUpperCase().includes(query))
+    .slice(0, 8);
+  }, [partNumber, masterRows]);
 
   const lookup = useMemo(
     () => (partNumber.trim() ? lookupMasterRowByPartNumber(masterRows, partNumber) : null),
@@ -72,12 +82,14 @@ export default function MovementLogForm({ masterRows, onSubmit, onCancel }: Move
         </button>
       </div>
 
-      <div>
+      <div className="relative">
         <label className="text-xs text-slate-400 mb-1 block">Part Number <span className="text-red-400">*</span></label>
         <div className="flex gap-2">
           <input
             value={partNumber}
-            onChange={e => setPartNumber(e.target.value)}
+            onChange={e => { setPartNumber(e.target.value); setShowSuggestions(true); }}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             placeholder="e.g. M2308N046087E"
             className="flex-1 bg-slate-800 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-700 focus:border-indigo-500 outline-none"
           />
@@ -89,8 +101,21 @@ export default function MovementLogForm({ masterRows, onSubmit, onCancel }: Move
             Scan
           </button>
         </div>
+        {showSuggestions && suggestions.length > 0 && (
+          <div className="absolute z-20 mt-1 w-full bg-slate-800 border border-slate-700 rounded-lg overflow-hidden shadow-xl">
+            {suggestions.map(s => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => { setPartNumber(s); setShowSuggestions(false); }}
+                className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-700"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-
       {showScanner && (
         <BarcodeScanner
           onScan={(decoded) => {
