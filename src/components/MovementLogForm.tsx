@@ -157,8 +157,12 @@ export default function MovementLogForm({ masterRows, onSubmit, onCancel }: Move
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-xs text-slate-400 mb-1 block">Source Location</label>
-          <input value={sourceLocation} onChange={e => setSourceLocation(e.target.value)}
-            className="w-full bg-slate-800 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-700 outline-none" />
+          <input
+            value={sourceLocation}
+            onChange={e => setSourceLocation(e.target.value)}
+            disabled={movementType === 'Stock Out'}
+            className="w-full bg-slate-800 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-700 outline-none disabled:opacity-60 disabled:cursor-not-allowed"
+          />
         </div>
         <div>
           <label className="text-xs text-slate-400 mb-1 block">Destination</label>
