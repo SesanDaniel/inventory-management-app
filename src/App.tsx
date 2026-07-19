@@ -595,7 +595,7 @@ const desktopTabButton = (tab: AppTab, label: string, Icon: any) => (
       </div>
 
       {/* DESKTOP (lg breakpoint and up) */}
-      <div className="hidden lg:flex h-screen w-full bg-slate-950">
+      <div className="hidden lg:flex h-screen w-full bg-slate-950 overflow-hidden">
         {needsAuth ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="w-full max-w-sm">
