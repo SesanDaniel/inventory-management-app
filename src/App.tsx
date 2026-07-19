@@ -267,9 +267,9 @@ useEffect(() => {
 
       await insertMovementLogRow(spreadsheetId, movementSheetInfo.sheetId, 'Movement Log', lastDataSheetRowNumber, inputValues, token);
 
-      if (selectedSheetName === 'Movement Log') {
-        await loadRowsData();
-      }
+      await loadRowsData();
+      await loadMasterRows();
+      await loadRecentMovements();
       setViewMode('list');
     } catch (err: any) {
       console.error('Log movement failed:', err);
