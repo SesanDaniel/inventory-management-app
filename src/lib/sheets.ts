@@ -397,7 +397,7 @@ export async function insertMovementLogRow(
 export function lookupMasterRowByPartNumber(
   masterRows: { values: Record<string, string> }[],
   partNumber: string
-): { itemCode: string; productCategory: string; size: string; colourName: string } | null {
+): { itemCode: string; productCategory: string; size: string; colourName: string; railNo: string } | null {
   const match = masterRows.find(
     r => String(r.values['Part Number'] || '').trim().toUpperCase() === partNumber.trim().toUpperCase()
   );
@@ -407,6 +407,7 @@ export function lookupMasterRowByPartNumber(
     productCategory: match.values['Product Category'] || '',
     size: match.values['Size'] || '',
     colourName: match.values['Colour Name'] || '',
+    railNo: match.values['Rail No.'] || '',
   };
 }
 
