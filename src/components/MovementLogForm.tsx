@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { X, ArrowLeftRight } from 'lucide-react';
 import { SheetRow } from '../types';
 import { lookupMasterRowByPartNumber } from '../lib/sheets';
@@ -39,6 +39,12 @@ export default function MovementLogForm({ masterRows, onSubmit, onCancel }: Move
     () => (partNumber.trim() ? lookupMasterRowByPartNumber(masterRows, partNumber) : null),
     [partNumber, masterRows]
   );
+
+  useEffect(() => {
+  if (movementType === 'Stock Out' && lookup?.railNo) {
+    setSourceLocation(lookup.railNo);
+  }
+}, [movementType, lookup]);
 
   const today = new Date().toISOString().split('T')[0];
 
